@@ -18,21 +18,11 @@ interface CSVTransaction {
 
 class ImportTransactionsService {
   async execute(transactionFile: string): Promise<Transaction[]> {
-    // fs.createReadStream(path.join(uploadConfig.directory, transactionFile))
-    //   .pipe(csv())
-    //   .on('data', row => {
-    //     console.log(row);
-    //   })
-    //   .on('end', () => {
-    //     console.log('finalizado');
-    //   });
-
     const categoriesRepository = getRepository(Category);
     const transactionsRepository = getCustomRepository(TransactionRepository);
 
-    const content = await fs.promises.readFile(
-      path.join(uploadConfig.directory, transactionFile),
-    );
+    const filePath = path.join(uploadConfig.directory, transactionFile);
+    const content = await fs.promises.readFile(filePath);
 
     const results = parse(content, { columns: true, trim: true });
 
@@ -74,6 +64,8 @@ class ImportTransactionsService {
     );
 
     await transactionsRepository.save(transactions);
+
+    await fs.promises.unlink(filePath);
 
     return transactions;
   }
